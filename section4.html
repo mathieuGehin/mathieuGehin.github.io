@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 · Current State — Mathieu Géhin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">M. <span>Géhin</span> · Portfolio</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="section1.html">Context</a></li>
+    <li><a href="section2.html">Architecture</a></li>
+    <li><a href="section3.html">Decisions</a></li>
+    <li><a href="section4.html" class="active">Status</a></li>
+    <li><a href="section5.html">Scope</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="section-page">
+
+    <header class="section-header">
+      <p class="section-eyebrow">Section 04</p>
+      <h1 class="section-title">Current State</h1>
+    </header>
+
+    <div class="status-bar">
+      <div class="status-chip">
+        <span class="status-dot dot-green"></span>
+        Architecture specified
+      </div>
+      <div class="status-chip">
+        <span class="status-dot dot-green"></span>
+        Decision logic implemented
+      </div>
+      <div class="status-chip">
+        <span class="status-dot dot-green"></span>
+        Assignment algorithm validated
+      </div>
+      <div class="status-chip">
+        <span class="status-dot dot-amber"></span>
+        PTL station integration — in progress
+      </div>
+      <div class="status-chip">
+        <span class="status-dot dot-grey"></span>
+        Production deployment — Sept. 2026
+      </div>
+    </div>
+
+    <p class="body-text">
+      As of April 2026, the system architecture is fully specified and the core decision logic is 
+      implemented. The WMS business logic layer is operational in a development environment. The 
+      order assignment algorithm has been validated through a reproducible simulation of 100 orders 
+      across 4 stations, confirming correct behaviour against expected assignment patterns. Physical 
+      PTL station assembly and integration testing are the next phase.
+    </p>
+
+    <p class="body-text">
+      The project is not yet running in production. What can be assessed at this stage is the 
+      design — its internal consistency, its grounding in the operational constraints of the site, 
+      and the degree to which it anticipates failure modes rather than reacting to them.
+    </p>
+
+    <div class="callout">
+      This page will be updated as the project progresses through integration and production 
+      deployment. Photos, simulation outputs, and interface screenshots will be added here.
+    </div>
+
+    <nav class="page-nav">
+      <a href="section3.html" class="prev">Key Decisions</a>
+      <a href="section5.html" class="next">Project Scope</a>
+    </nav>
+
+  </div>
+</div>
+
+<footer>
+  Mathieu Géhin · ENSAM ParisTech · mathieu.gehin@ensam.eu
+</footer>
+
+</body>
+</html>
