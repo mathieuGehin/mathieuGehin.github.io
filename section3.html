@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 · Decisions — Mathieu Géhin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">M. <span>Géhin</span> · Portfolio</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="section1.html">Context</a></li>
+    <li><a href="section2.html">Architecture</a></li>
+    <li><a href="section3.html" class="active">Decisions</a></li>
+    <li><a href="section4.html">Status</a></li>
+    <li><a href="section5.html">Scope</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="section-page">
+
+    <header class="section-header">
+      <p class="section-eyebrow">Section 03</p>
+      <h1 class="section-title">Key Design Decisions</h1>
+    </header>
+
+    <p class="body-text">
+      The architecture rests on a small number of decisions that each resolved a specific engineering 
+      problem. What follows covers four of them — the problem, the alternatives considered, and what 
+      was chosen and why.
+    </p>
+
+    <div class="decision">
+      <p class="decision-label">Decision 01 · Integration Architecture</p>
+      <h2 class="decision-title">A shared database as the only integration boundary</h2>
+      <p class="body-text">
+        The system involves components with nothing in common technically: a C# application running 
+        business logic, an ASRS PLC executing retrieval sequences, PTL controllers driving light signals, 
+        and SAP sending orders over a network. Direct communication between components — where the WMS 
+        calls the ASRS PLC directly and the PLC calls back when done — is fast but fragile: if one 
+        component restarts or slows down, everything coupled to it is affected. In a live production 
+        environment, partial failures are routine.
+      </p>
+      <p class="body-text">
+        The chosen approach treats the SQL Server database as the sole shared state. Every component 
+        reads from and writes to the database only. This makes each component independently testable, 
+        independently restartable, and replaceable without touching the rest of the system. The 
+        trade-off is latency: database round-trips are slower than direct calls. For this system, 
+        operating on a cycle of several hundred milliseconds, that trade-off is acceptable.
+      </p>
+    </div>
+
+    <div class="decision">
+      <p class="decision-label">Decision 02 · Order Assignment Algorithm</p>
+      <h2 class="decision-title">A scoring heuristic over exact optimisation</h2>
+      <p class="body-text">
+        Every time a new order arrives from SAP, the WMS must decide which of the 24 stations should 
+        handle it. The goal is to send the order to the station that already holds the most articles 
+        of the same type, minimising crate travel and operator idle time. Computing the theoretically 
+        optimal assignment across all orders and all stations simultaneously is a problem proven to be 
+        NP-hard (Boysen et al., 2020) — no exact algorithm can solve it at operational speed as orders 
+        arrive continuously.
+      </p>
+      <p class="body-text">
+        The practical alternative is a greedy heuristic: for each new order, score every station based 
+        on how many of its required article types are already present there, weighted against current 
+        station load, and assign to the best scorer. This runs in milliseconds across all 24 stations. 
+        It does not guarantee a globally optimal assignment — it guarantees a good assignment made fast 
+        enough to keep up with incoming orders, which is the operational requirement.
+      </p>
+    </div>
+
+    <div class="decision">
+      <p class="decision-label">Decision 03 · ASRS Retrieval Timing</p>
+      <h2 class="decision-title">Just-in-time retrieval, not retrieval on order arrival</h2>
+      <p class="body-text">
+        When an order is assigned to a station, its articles need to be retrieved from the ASRS. 
+        The naive approach is to trigger retrieval immediately at assignment. The problem is timing: 
+        ASRS retrieval takes between 45 and 90 seconds. If the station already has several orders 
+        queued ahead, triggering retrieval immediately means the crate will arrive at the waiting 
+        area long before the station is ready for it. The waiting area fills up, crates from other 
+        stations are blocked, and throughput degrades.
+      </p>
+      <p class="body-text">
+        The chosen approach computes, for each crate, the moment at which the station will actually 
+        be ready to receive it — based on how many orders are ahead in the queue and the average time 
+        per order — and issues the ASRS retrieval command timed to arrive just as the station becomes 
+        available. This keeps the waiting area as a flow buffer rather than a storage area, and 
+        prevents retrieval operations from accumulating ahead of demand.
+      </p>
+    </div>
+
+    <div class="decision">
+      <p class="decision-label">Decision 04 · Deadline Management</p>
+      <h2 class="decision-title">Autonomous wave tracking with two escalation thresholds</h2>
+      <p class="body-text">
+        Orders are grouped into waves — batches sharing a truck departure deadline. The WMS tracks 
+        a metric called <strong>slack</strong>: the difference between actual sorting progress and 
+        expected progress relative to the remaining time in the wave. If slack drops below a first 
+        threshold, the system automatically increases the urgency weighting applied to all station 
+        scoring — stations at risk of missing their deadline receive crates before stations with more 
+        time. If slack drops below a second, lower threshold, the system triggers a full reassignment 
+        of all pending orders from the current state of the warehouse, replanning the remainder of the 
+        wave without operator input.
+      </p>
+      <p class="body-text">
+        The alternative was human monitoring — an operator watching a dashboard and making decisions. 
+        The chosen approach removes that dependency entirely. The system recovers autonomously within 
+        the bounds of what the conveyor and ASRS can physically deliver.
+      </p>
+    </div>
+
+    <nav class="page-nav">
+      <a href="section2.html" class="prev">Architecture</a>
+      <a href="section4.html" class="next">Current State</a>
+    </nav>
+
+  </div>
+</div>
+
+<footer>
+  Mathieu Géhin · ENSAM ParisTech · mathieu.gehin@ensam.eu
+</footer>
+
+</body>
+</html>

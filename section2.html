@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 · Architecture — Mathieu Géhin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">M. <span>Géhin</span> · Portfolio</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="section1.html">Context</a></li>
+    <li><a href="section2.html" class="active">Architecture</a></li>
+    <li><a href="section3.html">Decisions</a></li>
+    <li><a href="section4.html">Status</a></li>
+    <li><a href="section5.html">Scope</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="section-page">
+
+    <header class="section-header">
+      <p class="section-eyebrow">Section 02</p>
+      <h1 class="section-title">System Architecture</h1>
+    </header>
+
+    <p class="body-text">
+      The warehouse operates as a pipeline with three physical zones and one software layer 
+      orchestrating all of them.
+    </p>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Zone</th>
+          <th>Function</th>
+          <th>Constraint</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ASRS</td>
+          <td>Stores the full article inventory. Automated cranes retrieve crates on WMS command.</td>
+          <td>Bounded retrieval throughput. 45–90 s per crate depending on storage location.</td>
+        </tr>
+        <tr>
+          <td>Waiting area</td>
+          <td>Buffer zone between ASRS exit and PTL stations. Crates held until the right release moment.</td>
+          <td>Decouples ASRS retrieval timing from station dispatch timing.</td>
+        </tr>
+        <tr>
+          <td>PTL stations (×24)</td>
+          <td>Operator-guided sorting. Each station holds 10 racks and a backlog of up to 6 pending orders.</td>
+          <td>Operator confirmation events must be received and processed in real time.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="body-text">
+      The WMS orchestrates all three zones continuously. It receives orders from SAP, assigns them 
+      to stations, triggers ASRS retrievals at the right moment, controls waiting area releases, drives 
+      PTL light signals, and tracks wave progress against truck deadlines — all from a single shared 
+      database that serves as the only integration point between the software layer and the physical 
+      equipment.
+    </p>
+
+    <h2 class="subsection-title">The database as integration boundary</h2>
+
+    <p class="body-text">
+      This database-as-integration-boundary is an architectural choice, not a default. It means no 
+      software component has direct knowledge of another's internal state. The ASRS PLC reads retrieval 
+      commands from the database and writes completion events back to it. The PTL controller reads light 
+      instructions and writes operator confirmations. The WMS reads all of this and writes its decisions. 
+      Each layer is isolated; the shared state is the only contract between them.
+    </p>
+
+    <p class="body-text">
+      This is what makes the IT/OT boundary tractable — and what makes the system testable and 
+      reconfigurable without touching every component at once.
+    </p>
+
+    <h2 class="subsection-title">Software stack</h2>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Role</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>WMS business logic</td>
+          <td>C# / .NET</td>
+          <td>Order assignment, urgency scoring, wave management, fault recovery</td>
+        </tr>
+        <tr>
+          <td>Shared state</td>
+          <td>SQL Server (SSMS)</td>
+          <td>Single integration point for all components — IT and OT</td>
+        </tr>
+        <tr>
+          <td>ASRS interface</td>
+          <td>PLC protocol via DB</td>
+          <td>Reads retrieval commands, writes completion events</td>
+        </tr>
+        <tr>
+          <td>PTL interface</td>
+          <td>PTL controller protocol</td>
+          <td>Reads light instructions, writes operator confirmations</td>
+        </tr>
+        <tr>
+          <td>ERP feed</td>
+          <td>SAP integration</td>
+          <td>Incoming order stream, outbound shipping data</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav class="page-nav">
+      <a href="section1.html" class="prev">Context</a>
+      <a href="section3.html" class="next">Key Design Decisions</a>
+    </nav>
+
+  </div>
+</div>
+
+<footer>
+  Mathieu Géhin · ENSAM ParisTech · mathieu.gehin@ensam.eu
+</footer>
+
+</body>
+</html>

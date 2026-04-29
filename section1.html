@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01 · Context — Mathieu Géhin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">M. <span>Géhin</span> · Portfolio</span>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="section1.html" class="active">Context</a></li>
+    <li><a href="section2.html">Architecture</a></li>
+    <li><a href="section3.html">Decisions</a></li>
+    <li><a href="section4.html">Status</a></li>
+    <li><a href="section5.html">Scope</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+  <div class="section-page">
+
+    <header class="section-header">
+      <p class="section-eyebrow">Section 01</p>
+      <h1 class="section-title">Context and Problem Statement</h1>
+    </header>
+
+    <p class="body-text">
+      <strong>ATS Group</strong> is a French industrial conveyor systems integrator. In early 2026, the 
+      company responded to a client tender in Pune, India, for the delivery of a complete intralogistics 
+      sorting system — capable of processing approximately <strong>480,000 articles per day</strong> 
+      across a single production shift.
+    </p>
+
+    <p class="body-text">
+      The client's facility already includes an <strong>ASRS</strong> (Automated Storage and Retrieval 
+      System) — a mechanized high-density storage installation where crates containing articles are stored 
+      in racks and retrieved by automated cranes. The ASRS is controlled by its own industrial 
+      <strong>PLC</strong> (Programmable Logic Controller) and connects to the rest of the warehouse 
+      via a conveyor network. Beyond this, nothing exists. No sorting software, no operator stations, 
+      no decision logic. The tender specifies the output — articles correctly sorted into outbound orders, 
+      trucks departing on schedule — and leaves the system architecture open.
+    </p>
+
+    <p class="body-text">
+      My role at ATS covers the full software and PTL hardware scope of the project: designing the WMS 
+      from scratch, specifying and assembling the PTL stations, and building the integration layer that 
+      connects the software to the physical equipment.
+    </p>
+
+    <h2 class="subsection-title">What a Put-to-Light system is</h2>
+
+    <p class="body-text">
+      A <strong>PTL (Put-to-Light)</strong> station is an operator-guided sorting workstation. Each 
+      station consists of a rack of bins — in this project, 10 bins per station — each equipped with 
+      an LED display module and a confirmation button. When a crate arrives from the conveyor, the WMS 
+      identifies which orders require articles from that crate and illuminates the corresponding bin 
+      modules, indicating the destination bin and the quantity to place. The operator places the 
+      articles and presses the confirmation button; the light extinguishes and the WMS records the 
+      completion. The system runs <strong>24 such stations in parallel</strong>.
+    </p>
+
+    <p class="body-text">
+      The hardware is straightforward. The difficulty lies elsewhere: at any given moment, the WMS must 
+      decide which crate to release onto the conveyor, to which station, and in what order — while 
+      simultaneously managing hundreds of active orders across 24 stations, respecting ASRS retrieval 
+      constraints, and ensuring all orders in a given wave are completed before the truck departure 
+      deadline.
+    </p>
+
+    <h2 class="subsection-title">The core engineering problem</h2>
+
+    <p class="body-text">
+      The system involves three distinct technical layers that must operate as a single coherent whole. 
+      <strong>SAP</strong>, the client's ERP, sends orders to the WMS as transactional database records — 
+      a standard IT operation with no real-time constraints. The <strong>ASRS PLC</strong> and 
+      <strong>PTL controllers</strong>, on the other hand, are hard real-time systems: a command sent 
+      too late or out of sequence has immediate physical consequences that cannot be undone. The WMS 
+      sits between these two worlds and must satisfy both simultaneously.
+    </p>
+
+    <p class="body-text">
+      This is the <strong>IT/OT integration problem</strong> — the structural tension between 
+      transactional information systems (IT) and real-time operational hardware (OT). No validated 
+      architectural pattern exists in the academic literature for a fully custom-built system of this 
+      type. The architecture had to be reasoned from first principles.
+    </p>
+
+    <div class="callout">
+      The starting point was a client tender, not a defined specification. Every architectural decision 
+      documented in this portfolio was made from scratch, with no prior codebase and no reference 
+      implementation to build on.
+    </div>
+
+    <nav class="page-nav">
+      <a href="index.html" class="prev">Home</a>
+      <a href="section2.html" class="next">System Architecture</a>
+    </nav>
+
+  </div>
+</div>
+
+<footer>
+  Mathieu Géhin · ENSAM ParisTech · mathieu.gehin@ensam.eu
+</footer>
+
+</body>
+</html>
